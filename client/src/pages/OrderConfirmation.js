@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ordersAPI } from '../utils/api';
 import { FaCheckCircle, FaShoppingBag, FaHome, FaPhone, FaEnvelope } from 'react-icons/fa';
@@ -12,16 +12,7 @@ const OrderConfirmation = () => {
 
   const orderId = searchParams.get('orderId');
 
-  useEffect(() => {
-    if (orderId) {
-      fetchOrderDetails();
-    } else {
-      setError('No order ID provided');
-      setLoading(false);
-    }
-  }, [orderId]);
-
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       const response = await ordersAPI.getById(orderId);
       if (response.data.success) {
@@ -35,7 +26,16 @@ const OrderConfirmation = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrderDetails();
+    } else {
+      setError('No order ID provided');
+      setLoading(false);
+    }
+  }, [orderId, fetchOrderDetails]);
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaShoppingCart, FaStar, FaQuoteLeft, FaArrowRight } from 'react-icons/fa';
-import { productsAPI, testimonialsAPI } from '../utils/api';
+import { getFeaturedProducts } from '../data/products';
 import './Home.css';
 
 const Home = () => {
@@ -10,18 +10,38 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = () => {
       try {
-        const [productsResponse, testimonialsResponse] = await Promise.all([
-          productsAPI.getAll({ sortBy: 'rating', sortOrder: 'desc' }),
-          testimonialsAPI.getAll()
-        ]);
-        
-        setFeaturedProducts(productsResponse.data.data.slice(0, 4));
-        setTestimonials(testimonialsResponse.data.data.slice(0, 3));
+        // Simulate API delay
+        setTimeout(() => {
+          setFeaturedProducts(getFeaturedProducts());
+          
+          // Sample testimonials data
+          setTestimonials([
+            {
+              _id: "1",
+              customerName: "Priya Sharma",
+              message: "The masala mathri is absolutely delicious! Just like my grandmother used to make. Will definitely order again.",
+              rating: 5
+            },
+            {
+              _id: "2", 
+              customerName: "Rajesh Kumar",
+              message: "Fast delivery and excellent quality. The kaju katli was fresh and tasted amazing. Highly recommended!",
+              rating: 5
+            },
+            {
+              _id: "3",
+              customerName: "Sunita Patel",
+              message: "Great variety of namkeen and sweets. The packaging was perfect and everything arrived fresh. Thank you!",
+              rating: 4
+            }
+          ]);
+          
+          setLoading(false);
+        }, 800);
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
         setLoading(false);
       }
     };
@@ -118,7 +138,7 @@ const Home = () => {
                       <span className="rating-text">({product.reviewCount})</span>
                     </div>
                     <div className="product-price">₹{product.price}</div>
-                    <Link to="/products" className="btn btn-outline">
+                    <Link to={`/products/${product._id}`} className="btn btn-outline">
                       View Product
                     </Link>
                   </div>
@@ -177,6 +197,8 @@ const Home = () => {
 };
 
 export default Home;
+
+
 
 
 

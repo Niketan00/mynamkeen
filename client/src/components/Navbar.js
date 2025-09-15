@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
 import './Navbar.css';
-
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { getTotalItems } = useCart();
@@ -71,6 +70,8 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
 
 
 

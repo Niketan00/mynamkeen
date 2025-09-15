@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { ordersAPI } from '../utils/api';
-import { FaCreditCard, FaMoneyBillWave, FaLock, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCreditCard, FaMoneyBillWave, FaLock, FaUser, FaMapMarkerAlt } from 'react-icons/fa';
 import './Checkout.css';
 
 const Checkout = () => {

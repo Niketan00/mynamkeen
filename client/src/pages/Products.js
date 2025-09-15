@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { productsAPI } from '../utils/api';
+import { sampleProducts, categories, getProductsByCategory } from '../data/products';
 import { FaShoppingCart, FaStar, FaFilter, FaSearch } from 'react-icons/fa';
 import './Products.css';
 
@@ -16,14 +17,6 @@ const Products = () => {
   
   const { addToCart } = useCart();
 
-  const categories = [
-    { value: 'all', label: 'All Products' },
-    { value: 'Namkeen', label: 'Namkeen' },
-    { value: 'Sweets', label: 'Sweets' },
-    { value: 'Snacks', label: 'Snacks' },
-    { value: 'Biscuits', label: 'Biscuits' },
-    { value: 'Other', label: 'Other' }
-  ];
 
   const sortOptions = [
     { value: 'createdAt', label: 'Newest First' },
@@ -32,49 +25,47 @@ const Products = () => {
     { value: 'rating', label: 'Highest Rated' }
   ];
 
-  useEffect(() => {
-    fetchProducts();
-  }, [sortBy, sortOrder]);
-
-  useEffect(() => {
-    filterProducts();
-  }, [products, searchTerm, selectedCategory]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(() => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await productsAPI.getAll({
-        category: selectedCategory === 'all' ? undefined : selectedCategory,
-        search: searchTerm || undefined,
-        sortBy,
-        sortOrder
-      });
-      setProducts(response.data.data);
+      // Simulate API delay
+      setTimeout(() => {
+        let filteredProducts = getProductsByCategory(selectedCategory);
+        
+        // Apply search filter
+        if (searchTerm) {
+          filteredProducts = filteredProducts.filter(product =>
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+        
+        // Apply sorting
+        filteredProducts.sort((a, b) => {
+          switch (sortBy) {
+            case 'name':
+              return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            case 'price':
+              return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+            case 'rating':
+              return sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
+            default:
+              return 0;
+          }
+        });
+        
+        setProducts(filteredProducts);
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error('Error fetching products:', error);
-    } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, searchTerm, sortBy, sortOrder]);
 
-  const filterProducts = () => {
-    let filtered = [...products];
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    setFilteredProducts(filtered);
-  };
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleAddToCart = (product) => {
     addToCart(product, 1);
@@ -174,18 +165,18 @@ const Products = () => {
             <>
               <div className="products-info">
                 <p>
-                  Showing {filteredProducts.length} of {products.length} products
+                  Showing {products.length} products
                 </p>
               </div>
 
-              {filteredProducts.length === 0 ? (
+              {products.length === 0 ? (
                 <div className="no-products">
                   <h3>No products found</h3>
                   <p>Try adjusting your search or filter criteria</p>
                 </div>
               ) : (
                 <div className="products-grid">
-                  {filteredProducts.map(product => (
+                  {products.map(product => (
                     <div key={product._id} className="product-card">
                       <div className="product-image">
                         <img src={product.image} alt={product.name} />
@@ -218,14 +209,19 @@ const Products = () => {
                           <div className="product-price">₹{product.price}</div>
                         </div>
 
-                        <button
-                          className="add-to-cart-btn"
-                          onClick={() => handleAddToCart(product)}
-                          disabled={!product.inStock}
-                        >
-                          <FaShoppingCart />
-                          {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                        </button>
+                        <div className="product-actions">
+                          <button
+                            className="add-to-cart-btn"
+                            onClick={() => handleAddToCart(product)}
+                            disabled={!product.inStock}
+                          >
+                            <FaShoppingCart />
+                            {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                          </button>
+                          <Link to={`/products/${product._id}`} className="btn btn-outline">
+                            View Details
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   ))}
